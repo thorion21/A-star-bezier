@@ -16,7 +16,7 @@ public class MapGeneration : MonoBehaviour
 
     void Start()
     {
-        grid = new Grid(10, 10, 10);
+        grid = new Grid(100, 100, 1);
         backgroundPos = GetComponent<Transform>();
         objPos = backgroundPos.transform.position;
         localScale = backgroundPos.localScale;
@@ -33,6 +33,17 @@ public class MapGeneration : MonoBehaviour
             mousePosY = mousePos.y - objPos.y + localScale.y * .5f;
             
             grid.SetStartBlock(mousePosX, mousePosY);
+        }
+        
+        if (Input.GetMouseButtonDown(1))
+        {
+            mousePos = Input.mousePosition;
+            mousePos = camera.ScreenToWorldPoint (mousePos);
+            
+            mousePosX = mousePos.x - objPos.x + localScale.x * .5f;
+            mousePosY = mousePos.y - objPos.y + localScale.y * .5f;
+            
+            grid.SetEndBlock(mousePosX, mousePosY);
         }
     }
 }
