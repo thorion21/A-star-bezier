@@ -11,6 +11,9 @@ public class Grid
     public int Width, Height, CellSize;
     public Cell[,] grid;
     public Vector2 startPos, endPos;
+    private InvDrone drone_script;
+    
+    
     public Grid(int width, int height, int cellSize)
     {
         Width = width;
@@ -18,6 +21,8 @@ public class Grid
         CellSize = cellSize;
         grid = new Cell[width, height];
         startPos = endPos = Vector2.negativeInfinity;
+        drone_script = GameObject.Find("Drone").GetComponent<InvDrone>();
+        
         GenerateGrid();
     }
     
@@ -27,12 +32,12 @@ public class Grid
         {
             for (int y = 0; y < Height; y++)
             {
-       //         Utils.CreateWorldText(null, grid[x, y].ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 20, Color.white,
-       //           TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+                grid[x, y] = new Cell(true, x, y, GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f);
+              //  Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")").ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 20, Color.white,
+             //     TextAnchor.MiddleCenter, TextAlignment.Center, 1);
                 
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
-                grid[x, y] = new Cell(true, x, y);
             }
         }
         
@@ -61,20 +66,7 @@ public class Grid
             if (startPos != Vector2.negativeInfinity)
             {
                 endPos = new Vector2(x, y);
-                System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
-                Astar solver = new Astar(startPos, endPos, grid, Width, Height);
-
-                sw.Start();
-                List<Cell> path = solver.Process();
-                sw.Stop();
-                
-                string s = "";
-                foreach (var cell in solver.Process())
-                {
-                    s += "(" + cell.x + ", " + cell.y + ") ";
-                }
-                Debug.Log("path: " + s);
-                Debug.Log("Elapsed = " + sw.ElapsedMilliseconds);
+                drone_script.Set(startPos, endPos, grid, Width, Height, CellSize);
             }
                 
         }

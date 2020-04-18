@@ -42,7 +42,7 @@ public class Astar
                 }   
             }
         }
-        Debug.Log("Vecini : " + neighbours.Count);
+        
         return neighbours;
     }
     
@@ -68,7 +68,6 @@ public class Astar
         int count = 0;
         while (!openSet.IsEmpty())
         {
-            Debug.Log("Iteratia : " + count);
             count++;
             Cell current = openSet.Pop();
             closedSet.Add(current);
@@ -82,7 +81,6 @@ public class Astar
                     continue;
 
                 int newCostToNeighbour = current.gCost + GetDistance(current, neighbour);
-                Debug.Log("(" + neighbour.x + ", " + neighbour.y +") " + newCostToNeighbour);
                 if (!openSet.Contains(neighbour) || newCostToNeighbour < neighbour.gCost)
                 {
                     neighbour.gCost = newCostToNeighbour;
@@ -93,10 +91,9 @@ public class Astar
                 }
             }
         }
-        Debug.Log("Done");
+
         if (openSet.IsEmpty())
         {
-            Debug.Log("OpenSet Gol!");
             return null;   
         }
         return RetracePath(startCell, endCell);
@@ -111,6 +108,8 @@ public class Astar
             path.Add(current);
             current = current.parent;
         }
+        
+        path.Add(startCell);
         
         path.Reverse();
         return path;

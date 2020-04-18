@@ -1,6 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 using UnityEngine;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class Cell {
 	
@@ -11,11 +14,13 @@ public class Cell {
     public int gCost;
     public int hCost;
     public Cell parent;
+    public Vector2 worldPos;
 	
-    public Cell(bool _walkable, int _gridX, int _gridY) {
+    public Cell(bool _walkable, int _gridX, int _gridY, Vector3 worldPosition) {
         walkable = _walkable;
         x = _gridX;
         y = _gridY;
+        worldPos = worldPosition;
     }
 
     public int fCost {
