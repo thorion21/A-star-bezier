@@ -16,7 +16,7 @@ public class MapGeneration : MonoBehaviour
 
     void Start()
     {
-        grid = new Grid(100, 100, 1);
+        grid = new Grid(10, 10, 10);
         backgroundPos = GetComponent<Transform>();
         objPos = backgroundPos.transform.position;
         localScale = backgroundPos.localScale;

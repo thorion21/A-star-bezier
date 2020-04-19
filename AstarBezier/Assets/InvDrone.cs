@@ -9,7 +9,7 @@ public class InvDrone : MonoBehaviour
     private List<RaycastHit2D> rays;
     
     [Range(0.0f, 25.0f)]
-    public float radius = 15.0f;
+    public float radius = 25.0f;
 
     private int Width, Height, CellSize;
     private Cell[,] grid;
@@ -26,7 +26,7 @@ public class InvDrone : MonoBehaviour
     void Start()
     {
         rays = new List<RaycastHit2D>();
-        MoveSpeed = 222.1f;
+        MoveSpeed = 10.0f;
     }
 
     public void Set(Vector2 startPos, Vector2 endPos, Cell[,] grid, int Width, int Height, int CellSize)
@@ -91,25 +91,34 @@ public class InvDrone : MonoBehaviour
                 
                 // 1. Gasim celula care e ocupata
                 Vector2 possibleCell = ConvertToObjectSpace(rays[i].point);
-
+                Vector2 pozReala = ConvertToObjectSpace(position);            // only used for debug
                 // 2. Modificam grid-ul ca ala sa fie not walkable
                 int pX = (int) possibleCell.x;
                 int pY = (int) possibleCell.y;
-
-                if (grid[pX, pY].walkable == false)
+                
+               if (pX >= Width || pY >= Height || pX < 0 || pY < 0)
+                {
+                    Debug.Log("Over border with [" + pX + ", " + pY + "] with original " + rays[i].point.x + ", " +
+                              rays[i].point.y);
                     continue;
-
-                Debug.Log("S-a blocat celula: " + possibleCell);
+                }
+                else if (grid[pX, pY].walkable == false)
+                    continue;
+               
+                Debug.Log("S-a blocat celula: " + pX + " , " + pY + "  vazuta la pozitia: [" + pozReala.x + ", " + pozReala.y + "]");
                 
                 grid[pX, pY].walkable = false;
 
-                // 3. Recalculam A* din pozitia path[CurrentNode - 1] daca celula de coliziune este la noi in path
+                // 3. Recalculam A* din pozitia path[CurrentNode] daca celula de coliziune este la noi in path
                 for (int j = CurrentNode; j < path.Count; j++)
                 {
                     if (path[j].x == pX && path[j].y == pY)
                     {
+                        Vector2 pozitieReala = ConvertToObjectSpace(position);
+                        int nowX = (int) pozitieReala.x;
+                        int nowY = (int) pozitieReala.y;
                         /* Recalculate A* */
-                        startPos = new Vector2(path[CurrentNode].x, path[CurrentNode].y);
+                        startPos = new Vector2(nowX, nowY);
                         CurrentNode = 0;
                         path = Astar();
                         CheckNode();
