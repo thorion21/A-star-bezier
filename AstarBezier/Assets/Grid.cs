@@ -11,9 +11,8 @@ public class Grid
     public int Width, Height, CellSize;
     public Cell[,] grid;
     public Vector2 startPos, endPos;
-    private InvDrone drone_script;
-    
-    
+    public InvDrone drone_script;
+
     public Grid(int width, int height, int cellSize)
     {
         Width = width;

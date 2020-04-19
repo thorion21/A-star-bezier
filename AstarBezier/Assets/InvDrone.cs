@@ -14,19 +14,26 @@ public class InvDrone : MonoBehaviour
     private int Width, Height, CellSize;
     private Cell[,] grid;
     private Vector2 startPos, endPos;
+    
     private List<Cell> path;
+    private LineRenderer lineRenderer;
+    private Vector3[] intermediatePath;
     
     private float MoveSpeed;
     private float Timer;
+    
     private static Vector2 CurrentPositionHolder, startLerpingPosition;
     private int CurrentNode;
-    private bool _firstPosition = true;
-    private bool _isSet = false;
     
+    public bool _firstPosition = true;
+    private bool _isSet = false;
+    private int recalculateCount;
+
+
     void Start()
     {
         rays = new List<RaycastHit2D>();
-        MoveSpeed = 10.0f;
+        MoveSpeed = 5.0f;
     }
 
     public void Set(Vector2 startPos, Vector2 endPos, Cell[,] grid, int Width, int Height, int CellSize)
@@ -37,9 +44,13 @@ public class InvDrone : MonoBehaviour
         this.Width = Width;
         this.Height = Height;
         this.CellSize = CellSize;
+        
         path = Astar();
         CheckNode();
+        lineRenderer = GetComponent<LineRenderer>();
         _isSet = true;
+        recalculateCount = 0;
+        
     }
     
     public Vector3 GetWorldPosition(int x, int y)
@@ -58,18 +69,35 @@ public class InvDrone : MonoBehaviour
         CurrentPositionHolder = path[CurrentNode].worldPos;
         startLerpingPosition = transform.position;
     }
-    
+
     void Update()
     {
         if (_firstPosition && _isSet)
         {
-            transform.position = GetWorldPosition((int) startPos.x, (int) startPos.y) + new Vector3(CellSize, CellSize) * .5f;
+            transform.position = GetWorldPosition((int) startPos.x, (int) startPos.y) +
+                                 new Vector3(CellSize, CellSize) * .5f;
             _firstPosition = false;
         }
 
         rays.Clear();
         Vector2 position = transform.position;
         
+        if (_isSet)
+        {
+            if (intermediatePath[path.Count - 1].x != position.x || intermediatePath[path.Count - 1].y != position.y)
+            {
+                Debug.Log("Path has " + path.Count + "  [" + intermediatePath[path.Count - 1].x + ", " +
+                          intermediatePath[path.Count - 1].y + "] [" + position.x + ", " + position.y + "]");
+                lineRenderer.positionCount = path.Count;
+                lineRenderer.SetPositions(intermediatePath);
+                lineRenderer.enabled = true;
+            }
+            else
+            {
+                lineRenderer.enabled = false;
+            }
+        }
+
         for (int i = 0; i < 36; i += 1)
         {
             float rad = i * 10.0f * Mathf.Deg2Rad;
@@ -92,6 +120,7 @@ public class InvDrone : MonoBehaviour
                 // 1. Gasim celula care e ocupata
                 Vector2 possibleCell = ConvertToObjectSpace(rays[i].point);
                 Vector2 pozReala = ConvertToObjectSpace(position);            // only used for debug
+                
                 // 2. Modificam grid-ul ca ala sa fie not walkable
                 int pX = (int) possibleCell.x;
                 int pY = (int) possibleCell.y;
@@ -122,6 +151,7 @@ public class InvDrone : MonoBehaviour
                         CurrentNode = 0;
                         path = Astar();
                         CheckNode();
+                        recalculateCount++;
                         break;
                     }
                 }
@@ -152,6 +182,11 @@ public class InvDrone : MonoBehaviour
                     CurrentNode++;
                     CheckNode();
                 }
+                else if (CurrentNode == path.Count - 1)
+                {
+                    Debug.Log("Drumul a fost recalculat de " + recalculateCount + " ori!");
+                    CurrentNode++;
+                }
             }
         }
         
@@ -167,6 +202,18 @@ public class InvDrone : MonoBehaviour
         return possibleCell;
     }
 
+    Vector3[] ConvertCellsToVector3(List<Cell> list)
+    {
+        Vector3[] path = new Vector3[list.Count];
+        int i = 0;
+        foreach (var cell in list)
+        {
+            path[i] = GetWorldPosition(cell.x, cell.y) + new Vector3(CellSize, CellSize) * .5f;
+            i++;
+        }
+        return path;
+    }
+
     List<Cell> Astar()
     {
         Astar solver = new Astar(startPos, endPos, grid, Width, Height);
@@ -178,7 +225,7 @@ public class InvDrone : MonoBehaviour
             s += "(" + cell.x + ", " + cell.y + ") ";
         }
         Debug.Log("path: " + s);
-
+        intermediatePath = ConvertCellsToVector3(path);
         return path;
     }
     
