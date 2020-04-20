@@ -32,8 +32,8 @@ public class Grid
             for (int y = 0; y < Height; y++)
             {
                 grid[x, y] = new Cell(true, x, y, GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f);
-              //  Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")").ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 20, Color.white,
-             //     TextAnchor.MiddleCenter, TextAlignment.Center, 1);
+                Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")").ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 20, Color.white,
+                  TextAnchor.MiddleCenter, TextAlignment.Center, 1);
                 
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);

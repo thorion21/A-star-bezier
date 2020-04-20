@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class InvDrone : MonoBehaviour
 {
@@ -33,7 +34,7 @@ public class InvDrone : MonoBehaviour
     void Start()
     {
         rays = new List<RaycastHit2D>();
-        MoveSpeed = 5.0f;
+        MoveSpeed = 1.0f;
     }
 
     public void Set(Vector2 startPos, Vector2 endPos, Cell[,] grid, int Width, int Height, int CellSize)
@@ -86,8 +87,6 @@ public class InvDrone : MonoBehaviour
         {
             if (intermediatePath[path.Count - 1].x != position.x || intermediatePath[path.Count - 1].y != position.y)
             {
-                Debug.Log("Path has " + path.Count + "  [" + intermediatePath[path.Count - 1].x + ", " +
-                          intermediatePath[path.Count - 1].y + "] [" + position.x + ", " + position.y + "]");
                 lineRenderer.positionCount = path.Count;
                 lineRenderer.SetPositions(intermediatePath);
                 lineRenderer.enabled = true;
@@ -118,25 +117,73 @@ public class InvDrone : MonoBehaviour
                 /* Recalculate Astar */
                 
                 // 1. Gasim celula care e ocupata
-                Vector2 possibleCell = ConvertToObjectSpace(rays[i].point);
+                
+                // Corner cases
+                // When the Ray hits a border / corner
+                float hitX = rays[i].point.x;
+                float hitY = rays[i].point.y;
+                bool hasHitBorderX = false;
+                bool hasHitBorderY = false;
+                
+                if (FloatEqual(hitX, Math.Round(hitX)))
+                {
+                    if (position.x < hitX)
+                        hitX += CellSize * .5f;
+                    else
+                        hitX -= CellSize * .5f;
+                    hasHitBorderX = true;
+                }
+                else
+                {
+                    hasHitBorderX = false;
+                }
+
+                if (FloatEqual(hitY, Math.Round(hitY)))
+                {
+                    if (position.y < hitY)
+                        hitY += CellSize * .5f;
+                    else
+                        hitY -= CellSize * .5f;
+                    hasHitBorderY = true;
+                }
+                else
+                {
+                    hasHitBorderY = false;
+                }
+
+                // hitting corner gives no actual information
+                if (hasHitBorderX && hasHitBorderY)
+                {
+                    Debug.Log("HIT THE CORNER... [" + rays[i].point.x + ", " + rays[i].point.y + "] ");
+                    continue;
+                }
+
+                Vector2 possibleCell = ConvertToObjectSpace(new Vector2(hitX, hitY));
                 Vector2 pozReala = ConvertToObjectSpace(position);            // only used for debug
                 
                 // 2. Modificam grid-ul ca ala sa fie not walkable
                 int pX = (int) possibleCell.x;
                 int pY = (int) possibleCell.y;
                 
-               if (pX >= Width || pY >= Height || pX < 0 || pY < 0)
+
+                if (pX >= Width || pY >= Height || pX < 0 || pY < 0)
                 {
-                    Debug.Log("Over border with [" + pX + ", " + pY + "] with original " + rays[i].point.x + ", " +
-                              rays[i].point.y);
+                    Debug.Log("Over border with [" + pX + ", " + pY + "] with original " + hitX + ", " +
+                              hitY);
                     continue;
                 }
                 else if (grid[pX, pY].walkable == false)
                     continue;
+
+               Debug.Log("S-a blocat celula: " + pX + " , " + pY + "  vazuta la pozitia: [" + pozReala.x + ", " + pozReala.y + "] with original " + hitX + ", " +
+                         hitY);
                
-                Debug.Log("S-a blocat celula: " + pX + " , " + pY + "  vazuta la pozitia: [" + pozReala.x + ", " + pozReala.y + "]");
-                
-                grid[pX, pY].walkable = false;
+               if (hasHitBorderX)
+                   Debug.Log("Margine pe X " + rays[i].point.x + " iar pozitia acutala e " + position.x + " diferenta " + (rays[i].point.x - position.x));
+               if (hasHitBorderY)
+                   Debug.Log("Margine pe Y" + rays[i].point.y + " iar pozitia acutala e " + position.y + " diferenta " + (rays[i].point.y - position.y));
+
+               grid[pX, pY].walkable = false;
 
                 // 3. Recalculam A* din pozitia path[CurrentNode] daca celula de coliziune este la noi in path
                 for (int j = CurrentNode; j < path.Count; j++)
@@ -190,6 +237,11 @@ public class InvDrone : MonoBehaviour
             }
         }
         
+    }
+
+    bool FloatEqual(double f1, double f2)
+    {
+        return Math.Abs(f1 - f2) < .001f;
     }
 
     Vector2 ConvertToObjectSpace(Vector2 point)

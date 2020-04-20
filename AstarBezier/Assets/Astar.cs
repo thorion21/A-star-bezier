@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -34,6 +35,12 @@ public class Astar
             {
                 if (j == 0 && i == 0)
                     continue;
+                /*
+                 // Only X and Y
+                if ((Math.Abs(i) + Math.Abs(j)) != 1)
+                    continue;
+                */
+                
                 int newX = j + origin.x;
                 int newY = i + origin.y;
                 if (CheckBoundaries(newX, newY))
@@ -42,6 +49,7 @@ public class Astar
                 }   
             }
         }
+        
         
         return neighbours;
     }
