@@ -59,8 +59,8 @@ public class Astar
         int dstY = Mathf.Abs(nodeA.y - nodeB.y);
 
         if (dstX > dstY)
-            return 14*dstY + 10* (dstX-dstY);
-        return 14*dstX + 10 * (dstY-dstX);
+            return 14 * dstY + 10 * (dstX-dstY);
+        return 14 * dstX + 10 * (dstY-dstX);
     }
     
     
