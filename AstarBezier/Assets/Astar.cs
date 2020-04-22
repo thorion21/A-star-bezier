@@ -33,14 +33,10 @@ public class Astar
         {
             for (int j = -1; j <= 1; j++)
             {
-                if (j == 0 && i == 0)
-                    continue;
-                /*
-                 // Only X and Y
+                // Only X and Y
                 if ((Math.Abs(i) + Math.Abs(j)) != 1)
                     continue;
-                */
-                
+
                 int newX = j + origin.x;
                 int newY = i + origin.y;
                 if (CheckBoundaries(newX, newY))

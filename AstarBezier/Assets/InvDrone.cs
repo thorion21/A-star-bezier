@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Xml;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using UnityEngine.EventSystems;
 
 public class InvDrone : MonoBehaviour
@@ -17,6 +20,7 @@ public class InvDrone : MonoBehaviour
     private Vector2 startPos, endPos;
     
     private List<Cell> path;
+    private List<Cell> rawAstarPath;
     private LineRenderer lineRenderer;
     private Vector3[] intermediatePath;
     
@@ -34,7 +38,7 @@ public class InvDrone : MonoBehaviour
     void Start()
     {
         rays = new List<RaycastHit2D>();
-        MoveSpeed = 1.0f;
+        MoveSpeed = 50.0f;
     }
 
     public void Set(Vector2 startPos, Vector2 endPos, Cell[,] grid, int Width, int Height, int CellSize)
@@ -154,7 +158,7 @@ public class InvDrone : MonoBehaviour
                 // hitting corner gives no actual information
                 if (hasHitBorderX && hasHitBorderY)
                 {
-                    Debug.Log("HIT THE CORNER... [" + rays[i].point.x + ", " + rays[i].point.y + "] ");
+                    //Debug.Log("HIT THE CORNER... [" + rays[i].point.x + ", " + rays[i].point.y + "] ");
                     continue;
                 }
 
@@ -178,24 +182,29 @@ public class InvDrone : MonoBehaviour
                Debug.Log("S-a blocat celula: " + pX + " , " + pY + "  vazuta la pozitia: [" + pozReala.x + ", " + pozReala.y + "] with original " + hitX + ", " +
                          hitY);
                
+               /*
                if (hasHitBorderX)
                    Debug.Log("Margine pe X " + rays[i].point.x + " iar pozitia acutala e " + position.x + " diferenta " + (rays[i].point.x - position.x));
                if (hasHitBorderY)
                    Debug.Log("Margine pe Y" + rays[i].point.y + " iar pozitia acutala e " + position.y + " diferenta " + (rays[i].point.y - position.y));
-
+                */
+               
                grid[pX, pY].walkable = false;
 
                 // 3. Recalculam A* din pozitia path[CurrentNode] daca celula de coliziune este la noi in path
-                for (int j = CurrentNode; j < path.Count; j++)
+                
+                for (int j = 0; j < path.Count; j++)
                 {
-                    if (path[j].x == pX && path[j].y == pY)
+                    if ((j < rawAstarPath.Count && (rawAstarPath[j].x == pX && rawAstarPath[j].y == pY)) ||
+                        path[j].x == pX && path[j].y == pY)
                     {
                         Vector2 pozitieReala = ConvertToObjectSpace(position);
+                        //TODO probabil ar trebui un cell pentru pozitia de unde pleaca
                         int nowX = (int) pozitieReala.x;
                         int nowY = (int) pozitieReala.y;
                         /* Recalculate A* */
                         startPos = new Vector2(nowX, nowY);
-                        CurrentNode = 0;
+                        CurrentNode = 0;    //TODO check if it can be removed
                         path = Astar();
                         CheckNode();
                         recalculateCount++;
@@ -266,6 +275,86 @@ public class InvDrone : MonoBehaviour
         return path;
     }
 
+    List<Cell> ConvertVector3ToCell(Vector3[] bezPath)
+    {
+        List<Cell> newPath = new List<Cell>();
+        foreach (var point in bezPath)
+        {
+            Vector2 objPoz = ConvertToObjectSpace(new Vector2(point.x, point.y));
+            newPath.Add(new Cell(true, (int)objPoz.x , (int)objPoz.y , point));   
+        }
+        return newPath;
+    }
+
+    List<Cell> CheckingCorners(List<Cell> oldPath)
+    {
+        List<Cell> newPath = new List<Cell>();
+        newPath.Add(oldPath[0]);
+        for (int i = 0; i < oldPath.Count - 2; i++)
+        {
+            Cell first = oldPath[i];
+            Cell second = oldPath[i + 1];
+            Cell third = oldPath[i + 2];
+            if ((first.x == second.x && first.x == third.x) || (first.y == second.y && first.y == third.y))
+            {
+                newPath.Add(second);
+            }
+            else
+            {
+                // the 3 points make a corner and we need to check if the forth (inside one) is an obstacle
+                Vector2 posibleObstacle = new Vector2();
+                float offsetX = 0;
+                float offsetY = 0;
+                if (second.x == first.x)
+                {
+                    posibleObstacle.x = third.x;
+                }
+                else
+                {
+                    posibleObstacle.x = first.x;
+                }
+
+                if (second.y == first.y)
+                {
+                    posibleObstacle.y = third.y;
+                }
+                else
+                {
+                    posibleObstacle.y = first.y;
+                }
+                
+                //TODO check what happens with more points
+                if (grid[(int)posibleObstacle.x, (int)posibleObstacle.y].walkable == false)
+                {
+                    Debug.Log("Am gasit un colt la pozitia : [" + posibleObstacle.x + ", " + posibleObstacle.y + "] ");
+
+                    if (posibleObstacle.x > second.x)
+                        offsetX -= CellSize * .5f;
+                    else
+                        offsetX += CellSize * .5f;
+
+                    if (posibleObstacle.y > second.y)
+                        offsetY -= CellSize * .5f;
+                    else
+                        offsetY += CellSize * .5f;
+                }
+
+                second.worldPos.x += offsetX;
+                second.worldPos.y += offsetY;
+                newPath.Add(second);
+            }
+        }
+        newPath.Add(oldPath[oldPath.Count - 1]);
+        return newPath;
+    }
+    
+    private float GetEuclidianDistance(Vector2 v1, Vector2 v2)
+    {
+        float x = v1.x - v2.x;
+        float y = v1.y - v2.y;
+        return Mathf.Sqrt(x * x + y * y);
+    }
+
     List<Cell> Astar()
     {
         Astar solver = new Astar(startPos, endPos, grid, Width, Height);
@@ -277,32 +366,41 @@ public class InvDrone : MonoBehaviour
             s += "(" + cell.x + ", " + cell.y + ") ";
         }
         Debug.Log("path: " + s);
+        
+        /*
+        // No Bezier Version
         intermediatePath = ConvertCellsToVector3(path);
+        return path;
+        */
+        
+        // Raw A* made for object space
+        // TODO make a line/blank object follow this path for visual purposes
+        rawAstarPath = path;
+        
+        // Checking if there are corners near an obstacle and moving the corner point by Cellsize / 2 away on x and y
+        path = CheckingCorners(rawAstarPath);
+        
+        // Aplying Bezier
+	    float tLength = 0;
+        for (int i = 0; i < path.Count - 1; i++)
+            tLength += GetEuclidianDistance(path[i].worldPos, path[i + 1].worldPos);
+
+        float step = 1 / tLength;
+
+        List<Vector3> newPath = new List<Vector3>();
+
+        for (float t = 0.0f; t <= 1.0f; t += step)
+        {
+            newPath.Add(Bezier.Apply(path, t));
+        }
+
+        // LineReader needs an array
+        intermediatePath = newPath.ToArray();
+        
+        // Make Cells to have both object and world coordinates
+        path = ConvertVector3ToCell(intermediatePath);
+        
         return path;
     }
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
