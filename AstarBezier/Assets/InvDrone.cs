@@ -199,12 +199,11 @@ public class InvDrone : MonoBehaviour
                         path[j].x == pX && path[j].y == pY)
                     {
                         Vector2 pozitieReala = ConvertToObjectSpace(position);
-                        //TODO probabil ar trebui un cell pentru pozitia de unde pleaca
                         int nowX = (int) pozitieReala.x;
                         int nowY = (int) pozitieReala.y;
                         /* Recalculate A* */
                         startPos = new Vector2(nowX, nowY);
-                        CurrentNode = 0;    //TODO check if it can be removed
+                        CurrentNode = 0;   
                         path = Astar();
                         CheckNode();
                         recalculateCount++;
@@ -323,7 +322,6 @@ public class InvDrone : MonoBehaviour
                     posibleObstacle.y = first.y;
                 }
                 
-                //TODO check what happens with more points
                 if (grid[(int)posibleObstacle.x, (int)posibleObstacle.y].walkable == false)
                 {
                     Debug.Log("Am gasit un colt la pozitia : [" + posibleObstacle.x + ", " + posibleObstacle.y + "] ");
@@ -338,10 +336,23 @@ public class InvDrone : MonoBehaviour
                     else
                         offsetY += CellSize * .5f;
                 }
-
-                second.worldPos.x += offsetX;
-                second.worldPos.y += offsetY;
-                newPath.Add(second);
+                Vector3 cornerPos = new Vector3(second.worldPos.x + offsetX, second.worldPos.y + offsetY);
+                Vector3 beforeCorner = cornerPos;
+                Vector3 afterCorner = cornerPos;
+                
+                if (first.y == second.y)
+                {
+                    beforeCorner.x -= offsetX;
+                    afterCorner.y -= offsetY;
+                }
+                else
+                {
+                    beforeCorner.y -= offsetY;
+                    afterCorner.x -= offsetX;
+                }
+                newPath.Add(new Cell(true, second.x, second.y, beforeCorner));
+                newPath.Add(new Cell(true, second.x, second.y, cornerPos));
+                newPath.Add(new Cell(true, second.x, second.y, afterCorner));
             }
         }
         newPath.Add(oldPath[oldPath.Count - 1]);
@@ -361,7 +372,7 @@ public class InvDrone : MonoBehaviour
         List<Cell> path = solver.Process();
                 
         string s = "";
-        foreach (var cell in solver.Process())
+        foreach (var cell in path)
         {
             s += "(" + cell.x + ", " + cell.y + ") ";
         }
@@ -380,6 +391,10 @@ public class InvDrone : MonoBehaviour
         // Checking if there are corners near an obstacle and moving the corner point by Cellsize / 2 away on x and y
         path = CheckingCorners(rawAstarPath);
         
+        // Restart from same position
+        if (_isSet)
+            path[0].worldPos = transform.position;
+
         // Aplying Bezier
 	    float tLength = 0;
         for (int i = 0; i < path.Count - 1; i++)
