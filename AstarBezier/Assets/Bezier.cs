@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Bezier
 {
-    private static float Fact(int n)
+    private static double Fact(int n)
     {
         if (n == 0 || n == 1)
             return 1;
@@ -16,7 +16,14 @@ public class Bezier
     
     private static float Bernstein(int i, int n, float t)
     {
-        return Fact(n) / (Fact(i) * Fact(n - i)) * Mathf.Pow(t, i) * Mathf.Pow(1 - t, n - i);
+        double a1 = Fact(n) / Fact(i);
+        double a2 = 1 / Fact(n - i);
+        
+        float t1 = (float)(a1 * a2);
+        float t2 = Mathf.Pow(t, i);
+        float t3 = Mathf.Pow(1 - t, n - i);
+        
+        return t1 * t2 * t3;
     }
     
     public static Vector3 Apply(List<Cell> points, float t)
