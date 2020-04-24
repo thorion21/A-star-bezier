@@ -32,19 +32,19 @@ public class Grid
             for (int y = 0; y < Height; y++)
             {
                 grid[x, y] = new Cell(true, x, y, GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f);
-                Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")").ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 20, Color.white,
+                Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")").ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 14, Color.white,
                   TextAnchor.MiddleCenter, TextAlignment.Center, 1);
                 
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 100f);
-                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 100f);
+                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 10000f);
+                Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, 10000f);
             }
         }
         
-        Debug.DrawLine(GetWorldPosition(0, Height), GetWorldPosition(Width, Height), Color.white, 100f);
-        Debug.DrawLine(GetWorldPosition(Width, 0), GetWorldPosition(Width, Height), Color.white, 100f);
+        Debug.DrawLine(GetWorldPosition(0, Height), GetWorldPosition(Width, Height), Color.white, 10000f);
+        Debug.DrawLine(GetWorldPosition(Width, 0), GetWorldPosition(Width, Height), Color.white, 10000f);
     }
 
-    public void SetStartBlock(float mouseX, float mouseY)
+    public Vector2? SetStartBlock(float mouseX, float mouseY)
     {
         ConvertToObjectSpace(mouseX, mouseY, out int x, out int y);
         
@@ -52,10 +52,14 @@ public class Grid
         {
             Debug.Log("StartBlock has been selected " + x + " " + y);
             startPos = new Vector2(x, y);
+
+            return startPos;
         }
+
+        return null;
     }
 
-    public void SetEndBlock(float mouseX, float mouseY)
+    public Vector2? SetEndBlock(float mouseX, float mouseY)
     {
         ConvertToObjectSpace(mouseX, mouseY, out int x, out int y);
         
@@ -66,10 +70,52 @@ public class Grid
             {
                 endPos = new Vector2(x, y);
                 drone_script.Set(startPos, endPos, grid, Width, Height, CellSize);
+
+                return endPos;
             }
-                
         }
+
+        return null;
     }
+    
+    public (int?, int?) PlaceBlock(float mouseX, float mouseY)
+    {
+        ConvertToObjectSpace(mouseX, mouseY, out int x, out int y);
+        
+        if (x >= 0 && y >= 0 && x < Width && y < Height && grid[x, y].walkable)
+        {
+            Debug.Log("Block has been placed at " + x + " " + y);
+            grid[x, y].walkable = false;
+
+            return (x, y);
+        }
+
+        return (null, null);
+    }
+    
+    public void ForcePlaceBlock(int x, int y)
+    {
+        grid[x, y].walkable = false;
+    }
+    
+    public (int?, int?) DestroyBlock(float mouseX, float mouseY)
+    {
+        ConvertToObjectSpace(mouseX, mouseY, out int x, out int y);
+        
+        if (x >= 0 && y >= 0 && x < Width && y < Height && !grid[x, y].walkable)
+        {
+            grid[x, y].walkable = true;
+            return (x, y);
+        }
+
+        return (null, null);
+    }
+    
+    public void ForceDestroyBlock(int x, int y)
+    {
+        grid[x, y].walkable = true;
+    }
+    
     private void ConvertToObjectSpace(float x, float y, out int newX, out int newY)
     {
         newX = Mathf.FloorToInt(x / CellSize);

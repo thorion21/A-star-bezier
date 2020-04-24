@@ -106,9 +106,11 @@ public class InvDrone : MonoBehaviour
             float rad = i * 10.0f * Mathf.Deg2Rad;
             Vector2 dir = GetDirectionVector(rad);
             
+            Vector2 add = new Vector2(2.5f * Mathf.Cos(rad), 2.5f * Mathf.Sin(rad));
+            
             rays.Add(
                 Physics2D.Raycast(
-                    position,
+                    position + add,
                     dir,
                     radius
                 )
@@ -116,7 +118,7 @@ public class InvDrone : MonoBehaviour
             
             if (rays[i].collider != null)
             {
-                Debug.DrawRay(position, dir * radius, Color.red);
+                Debug.DrawRay(position + add, dir * radius, Color.red);
                 
                 /* Recalculate Astar */
                 
@@ -217,7 +219,7 @@ public class InvDrone : MonoBehaviour
             }
             else
             {
-                Debug.DrawRay(position, dir * radius, Color.green);
+                Debug.DrawRay(position + add, dir * radius, Color.green);
             }
         }
         
@@ -371,12 +373,12 @@ public class InvDrone : MonoBehaviour
         Astar solver = new Astar(startPos, endPos, grid, Width, Height);
         List<Cell> path = solver.Process();
                 
-        string s = "";
+        /*string s = "";
         foreach (var cell in path)
         {
             s += "(" + cell.x + ", " + cell.y + ") ";
         }
-        Debug.Log("path: " + s);
+        Debug.Log("path: " + s);*/
         
         /*
         // No Bezier Version
