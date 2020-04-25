@@ -42,18 +42,22 @@ public class MapGeneration : MonoBehaviour
             mousePosX = mousePos.x - objPos.x + localScale.x * .5f;
             mousePosY = mousePos.y - objPos.y + localScale.y * .5f;
 
-            Vector2? start = grid.SetStartBlock(mousePosX, mousePosY);
-
-            if (start.HasValue)
+            grid.ConvertToObjectSpace(mousePosX, mousePosY, out int x, out int y);
+            if (!obstacles.Contains((x, y)))
             {
-                ClearElement("Start block");
-                GameObject go = new GameObject("Start block");
-                SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
-                renderer.sprite = sprite;
-                renderer.color = Color.green;
+                Vector2? start = grid.SetStartBlock(mousePosX, mousePosY);
 
-                go.transform.localScale = new Vector3(_cellSize, _cellSize);
-                go.transform.position = GetWorldPosition((int) start.Value.x, (int) start.Value.y);
+                if (start.HasValue)
+                {
+                    ClearElement("Start block");
+                    GameObject go = new GameObject("Start block");
+                    SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
+                    renderer.sprite = sprite;
+                    renderer.color = Color.green;
+
+                    go.transform.localScale = new Vector3(_cellSize, _cellSize);
+                    go.transform.position = GetWorldPosition((int) start.Value.x, (int) start.Value.y);
+                }
             }
         }
 
@@ -65,18 +69,22 @@ public class MapGeneration : MonoBehaviour
             mousePosX = mousePos.x - objPos.x + localScale.x * .5f;
             mousePosY = mousePos.y - objPos.y + localScale.y * .5f;
 
-            Vector2? end = grid.SetEndBlock(mousePosX, mousePosY);
-
-            if (end.HasValue)
+            grid.ConvertToObjectSpace(mousePosX, mousePosY, out int x, out int y);
+            if (!obstacles.Contains((x, y)) && Vector2.negativeInfinity != grid.startPos && (int)grid.startPos.x != x && (int)grid.startPos.y != y)
             {
-                ClearElement("End block");
-                GameObject go = new GameObject("End block");
-                SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
-                renderer.sprite = sprite;
-                renderer.color = Color.yellow;
+                Vector2? end = grid.SetEndBlock(mousePosX, mousePosY);
 
-                go.transform.localScale = new Vector3(_cellSize, _cellSize);
-                go.transform.position = GetWorldPosition((int) end.Value.x, (int) end.Value.y);
+                if (end.HasValue)
+                {
+                    ClearElement("End block");
+                    GameObject go = new GameObject("End block");
+                    SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
+                    renderer.sprite = sprite;
+                    renderer.color = Color.yellow;
+
+                    go.transform.localScale = new Vector3(_cellSize, _cellSize);
+                    go.transform.position = GetWorldPosition((int) end.Value.x, (int) end.Value.y);
+                }
             }
         }
 
