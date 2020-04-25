@@ -200,7 +200,9 @@ MonoBehaviour:
 
     R - Generate a random map
 
-    X - Clear current map'
+    X - Clear current map
+
+    N - Restart whole map'
 --- !u!222 &214140696
 CanvasRenderer:
   m_ObjectHideFlags: 0

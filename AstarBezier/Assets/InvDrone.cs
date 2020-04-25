@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using TMPro;
@@ -26,6 +27,7 @@ public class InvDrone : MonoBehaviour
     
     private float MoveSpeed;
     private float Timer;
+    private Vector3[] rawAStarintermediatePath;
     
     private static Vector2 CurrentPositionHolder, startLerpingPosition;
     private int CurrentNode;
@@ -55,7 +57,6 @@ public class InvDrone : MonoBehaviour
         lineRenderer = GetComponent<LineRenderer>();
         _isSet = true;
         recalculateCount = 0;
-        
     }
     
     public Vector3 GetWorldPosition(int x, int y)
@@ -91,8 +92,12 @@ public class InvDrone : MonoBehaviour
         {
             if (intermediatePath[path.Count - 1].x != position.x || intermediatePath[path.Count - 1].y != position.y)
             {
-                lineRenderer.positionCount = path.Count;
-                lineRenderer.SetPositions(intermediatePath);
+                //path == intermediatePath but different in size and values from rawAstartIntermediatePath
+                
+                //lineRenderer.positionCount = path.Count;
+                lineRenderer.positionCount = rawAStarintermediatePath.Length;
+                //lineRenderer.SetPositions(intermediatePath);
+                lineRenderer.SetPositions(rawAStarintermediatePath);
                 lineRenderer.enabled = true;
             }
             else
@@ -266,14 +271,14 @@ public class InvDrone : MonoBehaviour
 
     Vector3[] ConvertCellsToVector3(List<Cell> list)
     {
-        Vector3[] path = new Vector3[list.Count];
+        Vector3[] myPath = new Vector3[list.Count];
         int i = 0;
         foreach (var cell in list)
         {
-            path[i] = GetWorldPosition(cell.x, cell.y) + new Vector3(CellSize, CellSize) * .5f;
+            myPath[i] = GetWorldPosition(cell.x, cell.y) + new Vector3(CellSize, CellSize) * .5f;
             i++;
         }
-        return path;
+        return myPath;
     }
 
     List<Cell> ConvertVector3ToCell(Vector3[] bezPath)
@@ -373,22 +378,17 @@ public class InvDrone : MonoBehaviour
         Astar solver = new Astar(startPos, endPos, grid, Width, Height);
         List<Cell> path = solver.Process();
                 
-        /*string s = "";
+        string s = "";
         foreach (var cell in path)
         {
             s += "(" + cell.x + ", " + cell.y + ") ";
         }
-        Debug.Log("path: " + s);*/
-        
-        /*
-        // No Bezier Version
-        intermediatePath = ConvertCellsToVector3(path);
-        return path;
-        */
-        
+        Debug.Log("path: " + s);
+
         // Raw A* made for object space
         // TODO make a line/blank object follow this path for visual purposes
         rawAstarPath = path;
+        rawAStarintermediatePath = ConvertCellsToVector3(path).ToArray();
         
         // Checking if there are corners near an obstacle and moving the corner point by Cellsize / 2 away on x and y
         path = CheckingCorners(rawAstarPath);
@@ -419,5 +419,12 @@ public class InvDrone : MonoBehaviour
         
         return path;
     }
-    
+
+
+    public void ResetData()
+    {
+        _firstPosition = true; 
+        _isSet = false;
+        CurrentNode = 0;
+    }
 }

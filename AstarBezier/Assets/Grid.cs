@@ -126,4 +126,18 @@ public class Grid
     {
         return new Vector3(x - Width / 2, y - Height / 2) * CellSize;
     }
+
+    public void clearCells()
+    {
+        foreach (var cell in grid)
+        {
+            cell.walkable = true;
+        }
+    }
+    
+    public void Reset()
+    {
+        drone_script.ResetData();
+        clearCells();
+    }
 }
