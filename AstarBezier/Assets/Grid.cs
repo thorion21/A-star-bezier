@@ -1,17 +1,13 @@
-﻿using System.CodeDom.Compiler;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Xml;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System;
+
 
 public class Grid
 {
     public int Width, Height, CellSize;
-    public Cell[,] grid;
+    private Cell[,] grid;
     public Vector2 startPos, endPos;
-    public InvDrone drone_script;
+    private InvDrone drone_script;
 
     public Grid(int width, int height, int cellSize)
     {
@@ -25,14 +21,14 @@ public class Grid
         GenerateGrid();
     }
     
-    public void GenerateGrid()
+    private void GenerateGrid()
     {
         for (int x = 0; x < Width; x++)
         {
             for (int y = 0; y < Height; y++)
             {
                 grid[x, y] = new Cell(true, x, y, GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f);
-                Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")").ToString(), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 14, Color.white,
+                Utils.CreateWorldText(null, ("(" + grid[x, y].x + ", " + grid[x,y].y + ")"), GetWorldPosition(x, y) + new Vector3(CellSize, CellSize) * .5f, 14, Color.white,
                   TextAnchor.MiddleCenter, TextAlignment.Center, 1);
                 
                 Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, 10000f);
@@ -112,12 +108,12 @@ public class Grid
         newY = Mathf.FloorToInt(y / CellSize);
     }
     
-    public Vector3 GetWorldPosition(int x, int y)
+    private Vector3 GetWorldPosition(int x, int y)
     {
         return new Vector3(x - Width / 2, y - Height / 2) * CellSize;
     }
 
-    public void clearCells()
+    private void ClearCells()
     {
         foreach (var cell in grid)
         {
@@ -128,6 +124,6 @@ public class Grid
     public void Reset()
     {
         drone_script.ResetData();
-        clearCells();
+        ClearCells();
     }
 }

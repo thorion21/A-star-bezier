@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Random = System.Random;
 
 public class MapGeneration : MonoBehaviour
@@ -23,7 +19,7 @@ public class MapGeneration : MonoBehaviour
 
     private List<(int, int)> obstacles;
 
-    void Start()
+    private void Start()
     {
         grid = new Grid(_width, _height, _cellSize);
         backgroundPos = GetComponent<Transform>();
@@ -100,15 +96,15 @@ public class MapGeneration : MonoBehaviour
 
             if (coords.Item1.HasValue)
             {
-                string obs_name = "Obstacle" + coords.Item1.Value + ", " + coords.Item2.Value;
+                string obsName = "Obstacle" + coords.Item1.Value + ", " + coords.Item2.Value;
                 obstacles.Add((coords.Item1.Value, coords.Item2.Value));
 
-                GameObject go = new GameObject(obs_name);
+                GameObject go = new GameObject(obsName);
                 SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
                 renderer.sprite = sprite;
                 renderer.color = Color.red;
 
-                BoxCollider2D b2d = go.AddComponent<BoxCollider2D>();
+                go.AddComponent<BoxCollider2D>();
 
                 go.transform.localScale = new Vector3(_cellSize, _cellSize) * .85f;
                 go.transform.position = GetWorldPosition((int) coords.Item1, (int) coords.Item2);
@@ -128,21 +124,20 @@ public class MapGeneration : MonoBehaviour
 
             if (coords.Item1.HasValue)
             {
-                string obs_name = "Obstacle" + coords.Item1.Value + ", " + coords.Item2.Value;
+                string obsName = "Obstacle" + coords.Item1.Value + ", " + coords.Item2.Value;
                 obstacles.Remove((coords.Item1.Value, coords.Item2.Value));
 
-                GameObject go = GameObject.Find(obs_name);
+                GameObject go = GameObject.Find(obsName);
                 if (go)
                 {
                     Destroy(go.gameObject);
-                    Debug.Log(obs_name + " has been removed.");
+                    Debug.Log(obsName + " has been removed.");
                 }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            //TODO make obstacles unknown for drone
             foreach (var obs in obstacles)
             {
                 GameObject go = GameObject.Find("Obstacle" + obs.Item1 + ", " + obs.Item2);
@@ -154,7 +149,7 @@ public class MapGeneration : MonoBehaviour
 
             obstacles.Clear();
 
-            float chance = 25;
+            const float chance = 25;
             var rand = new Random();
 
             for (int i = 0; i < _height; i++)
@@ -164,15 +159,15 @@ public class MapGeneration : MonoBehaviour
                     int nr = rand.Next(101);
                     if (nr <= chance)
                     {
-                        string obs_name = "Obstacle" + i + ", " + j;
+                        string obsName = "Obstacle" + i + ", " + j;
                         obstacles.Add((i, j));
 
-                        GameObject go = new GameObject(obs_name);
+                        GameObject go = new GameObject(obsName);
                         SpriteRenderer renderer = go.AddComponent<SpriteRenderer>();
                         renderer.sprite = sprite;
                         renderer.color = Color.red;
 
-                        BoxCollider2D b2d = go.AddComponent<BoxCollider2D>();
+                        go.AddComponent<BoxCollider2D>();
 
                         go.transform.localScale = new Vector3(_cellSize, _cellSize) * .85f;
                         go.transform.position = GetWorldPosition(i, j);
@@ -206,8 +201,8 @@ public class MapGeneration : MonoBehaviour
 
         }
 
-}
-    private void ClearElements(string tag)
+    }
+    private static void ClearElements(string tag)
     {
         GameObject[] objects = GameObject.FindGameObjectsWithTag(tag);
         foreach (var obj in objects)
@@ -218,7 +213,7 @@ public class MapGeneration : MonoBehaviour
 
     }
 
-    private void ClearElement(string tag)
+    private static void ClearElement(string tag)
     {
         GameObject go = GameObject.Find(tag);
         if (go)
