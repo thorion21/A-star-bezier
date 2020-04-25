@@ -9,6 +9,7 @@ using Random = System.Random;
 public class MapGeneration : MonoBehaviour
 {
     private Grid grid;
+    public InvDrone drone;
     public Transform backgroundPos;
     public Camera camera;
     public Sprite sprite;
@@ -87,7 +88,7 @@ public class MapGeneration : MonoBehaviour
             mousePosX = mousePos.x - objPos.x + localScale.x * .5f;
             mousePosY = mousePos.y - objPos.y + localScale.y * .5f;
 
-            (int?, int?) coords = grid.PlaceBlock(mousePosX, mousePosY);
+            (int?, int?) coords = grid.PlaceBlock(mousePosX, mousePosY, obstacles);
 
             if (coords.Item1.HasValue)
             {
@@ -115,7 +116,7 @@ public class MapGeneration : MonoBehaviour
             mousePosX = mousePos.x - objPos.x + localScale.x * .5f;
             mousePosY = mousePos.y - objPos.y + localScale.y * .5f;
 
-            (int?, int?) coords = grid.DestroyBlock(mousePosX, mousePosY);
+            (int?, int?) coords = grid.DestroyBlock(mousePosX, mousePosY, obstacles);
 
             if (coords.Item1.HasValue)
             {
@@ -139,7 +140,6 @@ public class MapGeneration : MonoBehaviour
                 GameObject go = GameObject.Find("Obstacle" + obs.Item1 + ", " + obs.Item2);
                 if (go)
                 {
-                    grid.ForceDestroyBlock(obs.Item1, obs.Item2);
                     Destroy(go.gameObject);
                 }
             }
@@ -156,7 +156,6 @@ public class MapGeneration : MonoBehaviour
                     int nr = rand.Next(101);
                     if (nr <= chance)
                     {
-                        grid.ForcePlaceBlock(i, j);
                         string obs_name = "Obstacle" + i + ", " + j;
                         obstacles.Add((i, j));
 
@@ -174,21 +173,6 @@ public class MapGeneration : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            foreach (var obs in obstacles)
-            {
-                GameObject go = GameObject.Find("Obstacle" + obs.Item1 + ", " + obs.Item2);
-                if (go)
-                {
-                    grid.ForceDestroyBlock(obs.Item1, obs.Item2);
-                    Destroy(go.gameObject);
-                }
-            }
-
-            obstacles.Clear();
-        }
-
         if (Input.GetKeyDown(KeyCode.N))
         {
             
@@ -202,6 +186,8 @@ public class MapGeneration : MonoBehaviour
                 }
             }
 
+            drone.transform.position = new Vector3(-1000.0f, -1000.0f);
+            
             obstacles.Clear();
             
             grid.Reset();

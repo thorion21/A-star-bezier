@@ -78,35 +78,25 @@ public class Grid
         return null;
     }
     
-    public (int?, int?) PlaceBlock(float mouseX, float mouseY)
+    public (int?, int?) PlaceBlock(float mouseX, float mouseY, List<(int, int)> obstacles)
     {
         ConvertToObjectSpace(mouseX, mouseY, out int x, out int y);
         
-        if (x >= 0 && y >= 0 && x < Width && y < Height && grid[x, y].walkable)
+        if (x >= 0 && y >= 0 && x < Width && y < Height && !obstacles.Contains((x, y)))
         {
             Debug.Log("Block has been placed at " + x + " " + y);
-            grid[x, y].walkable = false;
-
             return (x, y);
         }
 
         return (null, null);
     }
-    
-    public void ForcePlaceBlock(int x, int y)
-    {
-        grid[x, y].walkable = false;
-    }
-    
-    public (int?, int?) DestroyBlock(float mouseX, float mouseY)
+
+    public (int?, int?) DestroyBlock(float mouseX, float mouseY, List<(int, int)> obstacles)
     {
         ConvertToObjectSpace(mouseX, mouseY, out int x, out int y);
         
-        if (x >= 0 && y >= 0 && x < Width && y < Height && !grid[x, y].walkable)
-        {
-            grid[x, y].walkable = true;
+        if (x >= 0 && y >= 0 && x < Width && y < Height && obstacles.Contains((x, y)))
             return (x, y);
-        }
 
         return (null, null);
     }
@@ -116,7 +106,7 @@ public class Grid
         grid[x, y].walkable = true;
     }
     
-    private void ConvertToObjectSpace(float x, float y, out int newX, out int newY)
+    public void ConvertToObjectSpace(float x, float y, out int newX, out int newY)
     {
         newX = Mathf.FloorToInt(x / CellSize);
         newY = Mathf.FloorToInt(y / CellSize);

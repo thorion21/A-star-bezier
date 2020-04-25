@@ -152,11 +152,11 @@ RectTransform:
   m_Father: {fileID: 1027370521}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 571.33, y: 265}
-  m_SizeDelta: {x: 380.35, y: 215}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 380.34998, y: 215}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &214140695
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,8 +199,6 @@ MonoBehaviour:
     Right Click - Drag to remove obstacles
 
     R - Generate a random map
-
-    X - Clear current map
 
     N - Restart whole map'
 --- !u!222 &214140696
@@ -898,6 +896,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c16d718b332ab448b76df87ddd3ef3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  drone: {fileID: 251616412}
   backgroundPos: {fileID: 1368582645}
   camera: {fileID: 519420031}
   sprite: {fileID: 21300000, guid: 0f92bdd3380eb3643b35de8d4837410d, type: 3}
